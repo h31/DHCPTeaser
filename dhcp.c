@@ -33,41 +33,51 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-int build_dhcp_discover(struct dhcp_pkt* pkt, unsigned char* src_mac, int mac_len)
+int build_dhcp_request(struct dhcp_pkt* pkt, const unsigned char* src_mac, int mac_len,
+        const struct in_addr requested_ip_address, const struct in_addr dhcp_server_address)
 {
     memset(pkt, 0, sizeof(struct dhcp_pkt));
     pkt->op      = OP_BOOT_REQUEST;
     pkt->htype   = HW_TYPE_ETHERNET;
     pkt->hlen    = HW_LENGTH_ETHERNET;
     pkt->hops    = 0x00;
-    pkt->xid     = 0x3903f326; //TODO: Random transaction ID
+    pkt->xid     = 0x3903f326; //TODO: Random transaction ID, bit order
     pkt->secs    = 0x0000;
-    pkt->flags   = 0x0000;
+    pkt->flags   = htons(0x8000); // Broadcast enabled
     pkt->ci_addr = 0x00000000;
     pkt->yi_addr = 0x00000000;
     pkt->si_addr = 0x00000000;
     pkt->gi_addr = 0x00000000;
 
     // memcpy(pkt->cm_addr, src_mac, mac_len); // LINK problem
-	int i;
-	for(i = 0; i < mac_len; i++)
+	for(int i = 0; i < mac_len; i++)
 		pkt->cm_addr[i] = src_mac[i];
 
     pkt->magic = DHCP_MAGIC;
 
     //Add DHCP options
     pkt->opt[0] = OPTION_DHCP_MESSAGE_TYPE;
-    pkt->opt[1] = 0x01;
-    pkt->opt[2] = VALUE_MESSAGE_DISCOVER;
+    pkt->opt[1] = 0x01; // length
+    pkt->opt[2] = VALUE_MESSAGE_REQUEST;
 
-    pkt->opt[3] = OPTION_PARAMETER_REQUEST_LIST;
-    pkt->opt[4] = 0x03;
-    pkt->opt[5] = OPTION_ROUTER; // Ask for gateway address
-    pkt->opt[6] = OPTION_SUBNET_MASK; // Ask for the netmask
-    pkt->opt[7] = OPTION_DNS; // ASK for DNS address
+    pkt->opt[3] = OPTION_REQUESTED_IP;
+    pkt->opt[4] = 0x04;
+    memcpy(pkt->opt + 5, (const void*) &requested_ip_address.s_addr, sizeof(in_addr_t));
 
-    pkt->opt[8] = DHCP_END;
+    pkt->opt[9] = OPTION_CLIENT_ID;
+    pkt->opt[10] = 0x07;
+    pkt->opt[11] = 0x01;
+    memcpy(pkt->opt + 12, (const void*) src_mac, mac_len);
 
+    if (dhcp_server_address.s_addr != 0) {
+        pkt->opt[18] = OPTION_SERVER_IP;
+        pkt->opt[19] = 0x04;
+        memcpy(pkt->opt + 20, (const void*) &dhcp_server_address.s_addr, sizeof(in_addr_t));
+
+        pkt->opt[24] = DHCP_END;
+    } else {
+        pkt->opt[18] = DHCP_END;
+    }
 
     //TODO : Use the same procedure to write options, than the one used to read options
 //    pkt->opt[0].id = 53;

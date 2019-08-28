@@ -34,8 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //IP header
 struct ipheader
 {
-    unsigned int    iph_ihl:4; 	//IP header length in 32 bits words
-    unsigned int    iph_ver:4; 	//IP version
+    unsigned char   iph_verihl; // IP version + IP header length in 32 bits words
     unsigned char   iph_tos; 	// Type of service
     unsigned short  iph_len; 	// Total packet length
     unsigned short  iph_ident; 	// Identification

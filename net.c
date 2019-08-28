@@ -32,9 +32,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sys/ioctl.h>
 #include <string.h>
-#include <stdlib.h>
 
 #include <net/if.h>
+#include <arpa/inet.h>
 
 unsigned short csum_ip(unsigned short *buf, int nwords)
 {
@@ -85,8 +85,7 @@ int build_ip4_hdr(void *ptr, unsigned short data_len, char* src_addr, char* dst_
 {
     struct ipheader *ip = (struct ipheader*)ptr;
     int len = sizeof(struct ipheader);
-    ip->iph_ihl = 5;
-    ip->iph_ver = 4;
+    ip->iph_verihl = 0x45;
     ip->iph_tos = 0;
     ip->iph_offset = 0;
     ip->iph_len = htons(len + data_len);

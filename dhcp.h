@@ -27,6 +27,9 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <stdint.h>
+#include <arpa/inet.h>
  
 #ifndef _DHCP_H
 #define _DHCP_H
@@ -48,7 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define OPTION_DHCP_MESSAGE_TYPE 	53
 #define VALUE_MESSAGE_DISCOVER 		0x01
 #define VALUE_MESSAGE_OFFER 		0x02
-#define VALUE_MESSAGE_REQUEST 		0x01
+#define VALUE_MESSAGE_REQUEST 		0x03
 #define VALUE_MESSAGE_ACK 			0x05
 #define VALUE_MESSAGE_NAK 			0x06
 #define VALUE_MESSAGE_INFORM 		0x08
@@ -56,6 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define OPTION_SERVER_IP 			54
 #define OPTION_LEASE_TIME 			51
 #define OPTION_REQUESTED_IP 		50
+#define OPTION_CLIENT_ID 	    	61
 
 #define OPTION_PARAMETER_REQUEST_LIST 	55
 
@@ -111,7 +115,8 @@ struct dhcp_pkt
 };
 
 //Build a discover DHCP packet, return packet size
-int build_dhcp_discover(struct dhcp_pkt* pkt, unsigned char* src_mac, int mac_len);
+int build_dhcp_request(struct dhcp_pkt* pkt, const unsigned char* src_mac, int mac_len,
+        struct in_addr requested_ip_address, struct in_addr dhcp_server_address);
 
 //Check if the packet is a DHCP one
 int is_dhcp(struct dhcp_pkt* pkt);

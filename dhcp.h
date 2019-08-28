@@ -121,11 +121,4 @@ int build_dhcp_request(struct dhcp_pkt* pkt, const unsigned char* src_mac, int m
 //Check if the packet is a DHCP one
 int is_dhcp(struct dhcp_pkt* pkt);
 
-//Find an option in the DHCP packet. offset is the position of the option in the packet.
-// After the call, offset is updated to the offset of the next option (if any)
-struct dhcp_opt* get_dhcp_option(struct dhcp_pkt *pkt, int *offset);
-
-//Read an IP in a 4 bytes data array
-unsigned int char_to_ip(unsigned char* ip);
-
 #endif

@@ -6,7 +6,6 @@
 #include <sys/socket.h>
 #include <netinet/udp.h>
 #include <arpa/inet.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -169,48 +168,6 @@ int main(int argc, char **argv) {
     server_addr.s_addr = rdhcp->si_addr;
 
     printf("  DHCP server IP address: %s\n", inet_ntoa(server_addr));
-
-//    //Now check DHCP options, and process them
-//    struct dhcp_opt *opt = NULL;
-//    int offs = 0;
-//    opt = get_dhcp_option(rdhcp, &offs);
-//    while (opt != NULL) {
-////        printf("OPT FOUND offset = %d\n", offs);
-//        switch (opt->id) {
-//            case OPTION_ROUTER: // If the option is the gateway address
-//                if (opt->len == 4) {
-//                    raddr.s_addr = char_to_ip(opt->values);
-//                    printf("GATEWAY=%s\n", inet_ntoa(raddr));
-//                }
-//                break;
-//
-//            case OPTION_SUBNET_MASK: // If the option is the netwmask
-//                if (opt->len == 4) {
-//                    raddr.s_addr = char_to_ip(opt->values);
-//                    printf("NETMASK=%s\n", inet_ntoa(raddr));
-//                }
-//                break;
-//
-//            case OPTION_DNS: // If option is the DNS addresses
-//                if (opt->len % 4 == 0) {
-//                    int i = 0;
-//                    printf("NAMESERVER=");
-//                    int max = opt->len / 4;
-//                    for (i = 0; i < max; i++) {
-//                        raddr.s_addr = char_to_ip(opt->values + 4 * i);
-//                        printf("%s", inet_ntoa(raddr));
-//                        if (i < max - 1)
-//                            printf(",");
-//                    }
-//                    printf("\n");
-//                }
-//                break;
-//
-//            default:
-//                break;
-//        }
-//        opt = get_dhcp_option(rdhcp, &offs);
-//    }
 
     close(sock);
     exit(0);

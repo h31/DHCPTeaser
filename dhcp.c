@@ -30,7 +30,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 #include "dhcp.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 int build_dhcp_request(struct dhcp_pkt* pkt, const unsigned char* src_mac, int mac_len,
@@ -96,17 +95,3 @@ int is_dhcp(struct dhcp_pkt* pkt)
     return pkt->magic == DHCP_MAGIC;
 }
 
-struct dhcp_opt* get_dhcp_option(struct dhcp_pkt *pkt, int *offset)
-{
-    if(pkt->opt[*offset] == 0x00 || pkt->opt[*offset] == DHCP_END)
-        return NULL;
-	// If the opt != end or != empty, cast the memory zone into a option struct, and return it
-	struct dhcp_opt* opt = (struct dhcp_opt*)&(pkt->opt[*offset]);
-	*offset += sizeof(struct dhcp_opt) + opt->len;
-    return opt;
-}
-
-unsigned int char_to_ip(unsigned char* ip)
-{
-	return htonl(ip[0] << 24 | ip[1] << 16 | ip[2] << 8 | ip[3]);
-}

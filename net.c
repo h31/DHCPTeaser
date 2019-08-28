@@ -61,10 +61,7 @@ struct hw_eth_iface find_iface(int sock_fd, char* iface_name)
     ioctl(sock_fd, SIOCGIFHWADDR, &ifr);
 
 	//Copy the address in our structure
-//    memcpy(iface.hw_addr, ifr.ifr_hwaddr.sa_data, 6); // LINK problem
-	int i;
-	for(i = 0; i < 6; i++)
-		iface.hw_addr[i] = ifr.ifr_hwaddr.sa_data[i];
+    memcpy(iface.hw_addr, ifr.ifr_hwaddr.sa_data, 6);
     iface.addr_len = 6;
 
     return iface;
@@ -108,11 +105,7 @@ int build_ip4_udp_pkt(unsigned char* buffer, int buff_len, unsigned char* data, 
 
     int udp_len  = build_upd_hdr(udp, data_len, src_port, dst_port);
     int ip_len   = build_ip4_hdr(ip, data_len + udp_len, src_addr, dst_addr, proto);
-//    memcpy(buffer + sizeof(struct udpheader) + sizeof(struct ipheader), data, data_len); // LINK problem
-	int i;
-	int offset = sizeof(struct udpheader) + sizeof(struct ipheader);
-	for(i = 0; i < data_len; i++)
-		buffer[offset + i] = data[i];
+    memcpy(buffer + sizeof(struct udpheader) + sizeof(struct ipheader), data, data_len);
 
     return data_len + udp_len + ip_len;
 }

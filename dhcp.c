@@ -48,9 +48,7 @@ int build_dhcp_request(struct dhcp_pkt* pkt, const unsigned char* src_mac, int m
     pkt->si_addr = 0x00000000;
     pkt->gi_addr = 0x00000000;
 
-    // memcpy(pkt->cm_addr, src_mac, mac_len); // LINK problem
-	for(int i = 0; i < mac_len; i++)
-		pkt->cm_addr[i] = src_mac[i];
+    memcpy(pkt->cm_addr, src_mac, mac_len);
 
     pkt->magic = DHCP_MAGIC;
 

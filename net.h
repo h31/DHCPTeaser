@@ -31,51 +31,51 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _NET_H
 #define _NET_H
 
+#include <stdint.h>
+
 //IP header
-struct ipheader
-{
-    unsigned char   iph_verihl; // IP version + IP header length in 32 bits words
-    unsigned char   iph_tos; 	// Type of service
-    unsigned short  iph_len; 	// Total packet length
-    unsigned short  iph_ident; 	// Identification
-    unsigned short  iph_offset; //Fragment offset
-    unsigned char   iph_ttl; 	// Time to live
-    unsigned char   iph_protocol; // Protocol
-    unsigned short  iph_chksum;	  // Header checksum
-    unsigned int    iph_sourceip; // Sender IP address
-    unsigned int    iph_destip;   // Destination IP address
+struct ipheader {
+    uint8_t iph_verihl; // IP version + IP header length in 32 bits words
+    uint8_t iph_tos;    // Type of service
+    uint16_t iph_len;    // Total packet length
+    uint16_t iph_ident;    // Identification
+    uint16_t iph_offset; //Fragment offset
+    uint8_t iph_ttl;    // Time to live
+    uint8_t iph_protocol; // Protocol
+    uint16_t iph_chksum;      // Header checksum
+    uint32_t iph_sourceip; // Sender IP address
+    uint32_t iph_destip;   // Destination IP address
 };
 
 //UDP header
-struct udpheader
-{
-    unsigned short udph_srcport;    // Scource port
-    unsigned short udph_destport;   // Destination port
-    unsigned short udph_len;        // Length (UDP + data)
-    unsigned short udph_chksum;     // UDP checksum
+struct udpheader {
+    uint16_t udph_srcport;    // Scource port
+    uint16_t udph_destport;   // Destination port
+    uint16_t udph_len;        // Length (UDP + data)
+    uint16_t udph_chksum;     // UDP checksum
 };
 
 //Structure describing an ethernet interface
-struct hw_eth_iface
-{
-    int  index;         // Index identifying the HW interface in the system
-    int  addr_len : 6;  // HW address lentgh
+struct hw_eth_iface {
+    int index;         // Index identifying the HW interface in the system
+    int addr_len : 6;  // HW address lentgh
     char hw_addr[6];    // HW address
 };
 
 //Checksum calculation function
-unsigned short csum_ip(unsigned short *buf, int nwords);
+uint16_t csum_ip(uint16_t *buf, int nwords);
 
 //Find a HW network interface based on its name
-struct hw_eth_iface find_iface(int sock_fd, char* iface_name);
+struct hw_eth_iface find_iface(int sock_fd, char *iface_name);
 
 //Build an UDP header
-int build_upd_hdr(void* ptr, unsigned short len, unsigned short src_port, unsigned short dst_port);
+int build_upd_hdr(void *ptr, uint16_t len, uint16_t src_port, uint16_t dst_port);
 
 //Build an ipV4 header
-int build_ip4_hdr(void *ptr, unsigned short data_len, char* src_addr, char* dst_addr, unsigned char proto);
+int build_ip4_hdr(void *ptr, uint16_t data_len, char *src_addr, char *dst_addr, unsigned char proto);
 
 // Build an UDP over IPV4 packet
-int build_ip4_udp_pkt(unsigned char* buffer, int buff_len, unsigned char* data, unsigned short data_len, char* src_addr, char* dst_addr, unsigned short src_port, unsigned short dst_port, unsigned char proto);
+int build_ip4_udp_pkt(unsigned char *buffer, int buff_len, unsigned char *data, uint16_t data_len, char *src_addr,
+                      char *dst_addr, uint16_t src_port, uint16_t dst_port, unsigned char proto);
 
 #endif

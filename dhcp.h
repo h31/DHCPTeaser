@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h>
 #include <arpa/inet.h>
+#include <stdbool.h>
 
 #ifndef _DHCP_H
 #define _DHCP_H
@@ -115,7 +116,8 @@ struct dhcp_pkt {
 
 //Build a discover DHCP packet, return packet size
 int build_dhcp_request(struct dhcp_pkt *pkt, const unsigned char *src_mac, int mac_len,
-                       struct in_addr requested_ip_address, struct in_addr dhcp_server_address);
+                       struct in_addr requested_ip_address, struct in_addr dhcp_server_address,
+                       bool add_client_id);
 
 //Check if the packet is a DHCP one
 int is_dhcp(struct dhcp_pkt *pkt);

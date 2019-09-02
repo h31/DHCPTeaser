@@ -27,22 +27,22 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 #include "dhcp.h"
 
 #include <string.h>
 
-int build_dhcp_request(struct dhcp_pkt* pkt, const unsigned char* src_mac, int mac_len,
-        const struct in_addr requested_ip_address, const struct in_addr dhcp_server_address)
-{
+int build_dhcp_request(struct dhcp_pkt *pkt, const unsigned char *src_mac, int mac_len,
+                       const struct in_addr requested_ip_address, const struct in_addr dhcp_server_address,
+                       bool add_client_id) {
     memset(pkt, 0, sizeof(struct dhcp_pkt));
-    pkt->op      = OP_BOOT_REQUEST;
-    pkt->htype   = HW_TYPE_ETHERNET;
-    pkt->hlen    = HW_LENGTH_ETHERNET;
-    pkt->hops    = 0x00;
-    pkt->xid     = 0x3903f326; //TODO: Random transaction ID, bit order
-    pkt->secs    = 0x0000;
-    pkt->flags   = htons(0x8000); // Broadcast enabled
+    pkt->op = OP_BOOT_REQUEST;
+    pkt->htype = HW_TYPE_ETHERNET;
+    pkt->hlen = HW_LENGTH_ETHERNET;
+    pkt->hops = 0x00;
+    pkt->xid = 0x3903f326; //TODO: Random transaction ID, bit order
+    pkt->secs = 0x0000;
+    pkt->flags = htons(0x8000); // Broadcast enabled
     pkt->ci_addr = 0x00000000;
     pkt->yi_addr = 0x00000000;
     pkt->si_addr = 0x00000000;
@@ -53,28 +53,31 @@ int build_dhcp_request(struct dhcp_pkt* pkt, const unsigned char* src_mac, int m
     pkt->magic = DHCP_MAGIC;
 
     //Add DHCP options
-    pkt->opt[0] = OPTION_DHCP_MESSAGE_TYPE;
-    pkt->opt[1] = 0x01; // length
-    pkt->opt[2] = VALUE_MESSAGE_REQUEST;
+    int i = 0;
+    pkt->opt[i++] = OPTION_DHCP_MESSAGE_TYPE;
+    pkt->opt[i++] = 0x01; // length
+    pkt->opt[i++] = VALUE_MESSAGE_REQUEST;
 
-    pkt->opt[3] = OPTION_REQUESTED_IP;
-    pkt->opt[4] = 0x04;
-    memcpy(pkt->opt + 5, (const void*) &requested_ip_address.s_addr, sizeof(in_addr_t));
+    pkt->opt[i++] = OPTION_REQUESTED_IP;
+    pkt->opt[i++] = 0x04;
+    memcpy(pkt->opt + i, (const void *) &requested_ip_address.s_addr, sizeof(in_addr_t));
+    i += sizeof(in_addr_t);
 
-    pkt->opt[9] = OPTION_CLIENT_ID;
-    pkt->opt[10] = 0x07;
-    pkt->opt[11] = 0x01;
-    memcpy(pkt->opt + 12, (const void*) src_mac, mac_len);
+    if (add_client_id) {
+        pkt->opt[i++] = OPTION_CLIENT_ID;
+        pkt->opt[i++] = 0x07;
+        pkt->opt[i++] = 0x01;
+        memcpy(pkt->opt + i, (const void *) src_mac, mac_len);
+        i += mac_len;
+    }
 
     if (dhcp_server_address.s_addr != 0) {
-        pkt->opt[18] = OPTION_SERVER_IP;
-        pkt->opt[19] = 0x04;
-        memcpy(pkt->opt + 20, (const void*) &dhcp_server_address.s_addr, sizeof(in_addr_t));
-
-        pkt->opt[24] = DHCP_END;
-    } else {
-        pkt->opt[18] = DHCP_END;
+        pkt->opt[i++] = OPTION_SERVER_IP;
+        pkt->opt[i++] = 0x04;
+        memcpy(pkt->opt + i, (const void *) &dhcp_server_address.s_addr, sizeof(in_addr_t));
+        i += sizeof(in_addr_t);
     }
+    pkt->opt[i] = DHCP_END;
 
     //TODO : Use the same procedure to write options, than the one used to read options
 //    pkt->opt[0].id = 53;
@@ -86,10 +89,9 @@ int build_dhcp_request(struct dhcp_pkt* pkt, const unsigned char* src_mac, int m
     return sizeof(struct dhcp_pkt);
 }
 
-int is_dhcp(struct dhcp_pkt* pkt)
-{
-	// It's a DHCP packet if dhcp magic number is good
-	//TODO: check the packet length ?
+int is_dhcp(struct dhcp_pkt *pkt) {
+    // It's a DHCP packet if dhcp magic number is good
+    //TODO: check the packet length ?
     return pkt->magic == DHCP_MAGIC;
 }
 

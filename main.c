@@ -26,13 +26,15 @@ struct in_addr requested_ip_addr;
 
 struct in_addr dhcp_server_addr;
 
+bool add_client_id = 0;
+
 int decode_mac_string(unsigned char mac[6], const char *mac_string) {
     return sscanf(mac_string, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
 }
 
 void read_arguments(int argc, char **argv) {
-    if (argc < 4 || argc > 5) {
-        fprintf(stderr, "Usage: %s IFACE_NAME SRC_MAC_ADDR REQUESTED_IP_ADDR [DHCP_SERVER_ADDR]\n", argv[0]);
+    if (argc < 4 || argc > 6) {
+        fprintf(stderr, "Usage: %s IFACE_NAME SRC_MAC_ADDR REQUESTED_IP_ADDR [CLIENTID:yes|no] [DHCP_SERVER_ADDR]\n", argv[0]);
         exit(1);
     }
 
@@ -55,7 +57,14 @@ void read_arguments(int argc, char **argv) {
            requested_ip_addr_string);
 
     if (argc == 5) {
-        const char* dhcp_server_addr_string = argv[4];
+        add_client_id = (strcmp("yes", argv[4]) == 0);
+        if (add_client_id) {
+            printf("  Adding client ID\n");
+        }
+    }
+
+    if (argc == 6) {
+        const char* dhcp_server_addr_string = argv[5];
         inet_aton(dhcp_server_addr_string, &dhcp_server_addr);
         printf("  DHCP server IP address: %s\n", dhcp_server_addr_string);
     } else {
@@ -117,7 +126,7 @@ int main(int argc, char **argv) {
 
 //    struct dhcp_pkt *dhcp = (struct dhcp_pkt*)(frame_buffer + sizeof(struct udpheader) + sizeof(struct ipheader));
     struct dhcp_pkt dhcp;
-    int dhcp_len = build_dhcp_request(&dhcp, src_mac, iface.addr_len, requested_ip_addr, dhcp_server_addr);
+    int dhcp_len = build_dhcp_request(&dhcp, src_mac, iface.addr_len, requested_ip_addr, dhcp_server_addr, add_client_id);
 
     int len = build_ip4_udp_pkt(packet_buffer, ETH_DATA_LEN, (unsigned char *) &dhcp, dhcp_len, "0.0.0.0",
                                 "255.255.255.255", 68,
